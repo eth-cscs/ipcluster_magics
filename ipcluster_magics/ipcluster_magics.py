@@ -11,7 +11,7 @@ import tempfile
 
 @magics_class
 class IPClusterMagics(Magics):
-    """engine an IPyParallel cluster.
+    """start/stop an IPyParallel cluster.
 
 Usage:
   %ipcluster start [options]
@@ -26,11 +26,11 @@ Options:
   -N --num_nodes <int>     Number of nodes (default 1).
   -n --num_engines <int>   Number of engines (default 1 per node).
   -m --modules <str>       Modules to load (default none).
-  -e --env <str>           Conda env to load (default none).
+  -e --env <str>           Conda env to activate (default none).
   -t --time <time>         Time limit (default 30:00).
-  -d --dir <path>          Directory to engine engines (default $HOME)
-  -C --const <str>         SLURM contraint (default haswell).
-  -q --queue <str>         SLURM queue (default interactive).
+  -d --dir <path>          Directory to ipengines (default $HOME)
+  -C --const <str>         SLURM contraint (default gpu).
+  -q --queue <str>         SLURM queue (default none).
   -J --name <str>          Job name (default ipyparallel)
 """
 
@@ -50,7 +50,6 @@ Options:
 #SBATCH -N {num_nodes}
 #SBATCH -t {time}
 #SBATCH -C {constraint}
-#SBATCH -L SCRATCH
 """
         
         # If we want to use salloc (we do)
@@ -63,7 +62,7 @@ module load "$mod"
 export PATH=$PYTHONUSERBASE/bin:$PATH
 """
         self.env_template = """
-# Load conda env
+# Enable conda env
 env="{env}"
 source activate "$env"
 """
@@ -118,9 +117,9 @@ srun -N {num_engines} -n {num_engines} -c 1 -s bash {engine_script}
             '--num_nodes': 1,
             '--modules': None,
             '--env': None,
-            '--queue': 'interactive',
+            '--queue': None,
             '--time': '30:00',
-            '--const': 'haswell'
+            '--const': 'gpu'
         }
         
         given = {key: val for key, val in args.items() if val}
