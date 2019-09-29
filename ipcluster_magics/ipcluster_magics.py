@@ -11,7 +11,7 @@ import tempfile
 
 @magics_class
 class IPClusterMagics(Magics):
-    """start/stop an IPyParallel cluster.
+    """Launch an IPyParallel cluster.
 
 Usage:
   %ipcluster start [options]
@@ -26,10 +26,11 @@ Options:
   -N --num_nodes <int>     Number of nodes (default 1).
   -n --num_engines <int>   Number of engines (default 1 per node).
   -m --modules <str>       Modules to load (default none).
-  -e --env <str>           Conda env to activate (default none).
+  -e --env <str>           Virtual env to activate (default none).
   -t --time <time>         Time limit (default 30:00).
   -d --dir <path>          Directory to ipengines (default $HOME)
   -C --const <str>         SLURM contraint (default gpu).
+  -A --account <str>       SLURM account (default none)
   -q --queue <str>         SLURM queue (default none).
   -J --name <str>          Job name (default ipyparallel)
 """
@@ -50,49 +51,53 @@ Options:
 #SBATCH -N {num_nodes}
 #SBATCH -t {time}
 #SBATCH -C {constraint}
+#SBATCH -A {account}
 """
         
         # If we want to use salloc (we do)
-        self.salloc_template = 'salloc -J {name} -q {queue} -N {num_nodes} -t {time} -C {const} bash {script}'
+        self.salloc_template = 'salloc -J {name} -q {queue} -N {num_nodes} -t {time} -C {const}  -A {account} bash {script}'
 
         self.module_template = """
 # Load modules
 mod="{module}"
 module load "$mod"
-export PATH=$PYTHONUSERBASE/bin:$PATH
+echo "Loaded module $mod"
+#export PATH=$PYTHONUSERBASE/bin:$PATH
 """
         self.env_template = """
-# Enable conda env
+# Enable venv
 env="{env}"
-source activate "$env"
+source "$env"/bin/activate
+echo "Activated venv $env"
+
 """
         self.engine_template = """
 # This script runs from all compute nodes
+hostname=$(hostname -i)
 ipengine --log-to-file
+echo "Started engine on $hostname."
 """
 
         self.controller_template = """       
 # This script is run from head compute node (e.g. nid00001)
 
 # Launch controller, listening on correct interface
-myip=$(ip addr show ipogif0 | grep '10\.' | awk '{{print $2}}' | awk -F'/' '{{print $1}}')
+#myip=$(ip addr show ipogif0 | grep '10\.' | awk '{{print $2}}' | awk -F'/' '{{print $1}}')
+myip=$(hostname -i)
 ipcontroller --ip="$myip" --log-to-file
+echo "Started controller on '$myip'."
 """
         
         self.cluster_template = """
 # This script runs from mom node (e.g. cmom05)
-
 # Report job id
 echo "$SLURM_JOBID" > {jobid_script}
-
 # Get head compute node hostname
 headnode=$(scontrol show job "$SLURM_JOBID" | grep BatchHost | awk -F= '{{print $2}}')
-
 # Start controller
 ssh -o LogLevel=error $headnode 'bash {controller_script}' > /dev/null &
-
-sleep 3
-
+sleep 10
+echo "Started controller on $headnode"
 # Start engines
 srun -N {num_engines} -n {num_engines} -c 1 -s bash {engine_script}
 """
@@ -119,6 +124,7 @@ srun -N {num_engines} -n {num_engines} -c 1 -s bash {engine_script}
             '--env': None,
             '--queue': None,
             '--time': '30:00',
+            '--account': None,
             '--const': 'gpu'
         }
         
