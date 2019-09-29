@@ -1,4 +1,4 @@
-# IPyParallel Cluster Magic for Cori @ NERSC
+# IPython magic for launching IPyParallel clusters via Slurm 
 
 ```
 Start an IPyParallel cluster.
