@@ -31,7 +31,7 @@ Options:
   -d --dir <path>          Directory to ipengines (default $HOME)
   -C --const <str>         SLURM contraint (default gpu).
   -A --account <str>       SLURM account (default none)
-  -q --queue <str>         SLURM queue (default none).
+  -q --queue <str>         SLURM queue (default normal).
   -J --name <str>          Job name (default ipyparallel)
 """
 
@@ -52,6 +52,8 @@ Options:
 #SBATCH -t {time}
 #SBATCH -C {constraint}
 #SBATCH -A {account}
+module load daint-{constraint}
+module load jupyterlab
 """
         
         # If we want to use salloc (we do)
@@ -122,7 +124,7 @@ srun -N {num_engines} -n {num_engines} -c 1 -s bash {engine_script}
             '--num_nodes': 1,
             '--modules': None,
             '--env': None,
-            '--queue': None,
+            '--queue': 'normal',
             '--time': '30:00',
             '--account': None,
             '--const': 'gpu'
