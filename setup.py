@@ -7,11 +7,6 @@ setup(
     description='IPyParallel Slurm Magics',
     packages={'ipcluster_magics'},
     install_requires=[
-        'bqplot>=0.10.2',
         'ipython>=6.1.0',
-        'ipywidgets>=7.2',
-        'numpy>=1.12',
-        'pandas>=0.20.3',
-        'qgrid>=1.0.2'
     ]
 )
