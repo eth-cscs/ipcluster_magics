@@ -4,7 +4,7 @@ setup(
     name='ipcluster_magics',
     version='0.1',
     license='BSD',
-    description='IPyParallel SLURM Magic for Cori @ NERSC',
+    description='IPyParallel Slurm Magics',
     packages={'ipcluster_magics'},
     install_requires=[
         'bqplot>=0.10.2',
