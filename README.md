@@ -19,7 +19,8 @@ Options:
   -e --env <str>           Conda env to load (default none).
   -t --time <time>         Time limit (default 30:00).
   -d --dir <path>          Directory to engine engines (default $HOME)
-  -C --const <str>         SLURM contraint (default haswell).
-  -q --queue <str>         SLURM queue (default interactive).
+  -C --const <str>         SLURM contraint (default gpu).
+  -q --queue <str>         SLURM queue (default normal).
+  -a --account <str>       SLURM queue (default none).
   -J --name <str>          Job name (default ipyparallel)
 ```
