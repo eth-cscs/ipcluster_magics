@@ -52,8 +52,6 @@ Options:
 #SBATCH -t {time}
 #SBATCH -C {constraint}
 #SBATCH -A {account}
-module load daint-{constraint}
-module load jupyterlab
 """
         
         # If we want to use salloc (we do)
